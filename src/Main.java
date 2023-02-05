@@ -2,14 +2,16 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.InputMismatchException;
 import java.io.*;
-import java.nio.*;
 import java.nio.file.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class Main {
     static Scanner scanner = new Scanner(System.in);
 
     /**
      * Takes user input and generates a random password of the specified length.
+     *
      * @return The generated password.
      */
     static String generatePassword() {
@@ -28,19 +30,22 @@ public class Main {
             int num = scanner.nextInt();
             for (int i = 0; i <= (num); i++) {
                 int randomNum = rand.nextInt(chars.length);
-                pwd = pwd.concat(String.valueOf(chars[randomNum])); }
+                pwd = pwd.concat(String.valueOf(chars[randomNum]));
+            }
 
-        // Error catching in case a non-integer was entered.
+            // Error catching in case a non-integer was entered.
         } catch (InputMismatchException e) {
             System.out.println("You must enter a valid number. Please try again.");
             scanner.next();
-            generatePassword(); }
+            generatePassword();
+        }
 
         return pwd;
     }
 
     /**
      * Takes user input and stores credentials into a file.
+     *
      * @param the generated password, or default value.
      */
     static void storeCredentials(String password) {
@@ -71,8 +76,8 @@ public class Main {
                 try {
                     Files.writeString(masterList.toPath(), credentials, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                     System.out.println("Your credentials have been stored.\n");
-                } catch (IOException ex) {
-                    System.out.println("There was an error processing your request.");
+                } catch (IOException e) {
+                    System.out.println("There was an error processing your request: " + e.getMessage());
                 }
                 break;
             } else if (!accepted.equals("yes") && !accepted.equals("no")) {
@@ -86,6 +91,20 @@ public class Main {
      */
     static void accessCredentials() {
         // TODO: access credentials method
+
+        File masterList = new File("masterList.txt");
+        Charset charset = StandardCharsets.UTF_8;
+
+        // Outputs the stored credentials to the terminal, or throws an exception if there is an error accessing the file.
+        System.out.println("These are your stored credentials:\n");
+        try (BufferedReader bufferedReader = Files.newBufferedReader(masterList.toPath(), charset)) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.out.println("Error accessing file: " + e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
@@ -102,47 +121,53 @@ public class Main {
 
         // Loops program until user chooses to exit.
         boolean exit = false;
+        int menuChoice;
+
         while (!exit) {
             System.out.println("Would you like to generate a random password, store existing credentials, or access your passwords? \n" +
                     "(Please input '1' for password generation, '2' for storing, '3' for file access, or '4' to exit the program. )");
-            int menuChoice = scanner.nextInt();
-            scanner.nextLine();
+            try {
+                menuChoice = scanner.nextInt();
+                scanner.nextLine();
 
-            // Loops password generator until user finds the generated password acceptable.
-            if (menuChoice == 1) {
-                while (true) {
-                    String password = generatePassword();
-                    System.out.println("Your randomly generated password is: " + password);
-                    System.out.println("Is this acceptable? Please enter 'yes' or 'no'.");
-                    String answer = scanner.next();
-                    String accepted = answer.toLowerCase();
-                    if (accepted.equals("yes")) {
-                        storeCredentials(password);
-                        break;
-                    } else if (!accepted.equals("yes") && !accepted.equals("no")) {
-                        System.out.println("You have entered an invalid input.\n");
+                // Loops password generator until user finds the generated password acceptable.
+                if (menuChoice == 1) {
+                    while (true) {
+                        String password = generatePassword();
+                        System.out.println("Your randomly generated password is: " + password);
+                        System.out.println("Is this acceptable? Please enter 'yes' or 'no'.");
+                        String answer = scanner.next();
+                        String accepted = answer.toLowerCase();
+                        if (accepted.equals("yes")) {
+                            storeCredentials(password);
+                            break;
+                        } else if (!accepted.equals("yes") && !accepted.equals("no")) {
+                            System.out.println("You have entered an invalid input.\n");
+                        }
                     }
                 }
-            }
-            // Points user to the function allowing them to store their credentials.
-            else if (menuChoice == 2) {
-                String password = "default";
-                storeCredentials(password);
-            }
+                // Points user to the function allowing them to store their credentials.
+                else if (menuChoice == 2) {
+                    String password = "default";
+                    storeCredentials(password);
+                }
 
-            // Points user to the function allowing them to access their credentials.
-            else if (menuChoice == 3) {
-                accessCredentials();
-                break;
+                // Points user to the function allowing them to access their credentials.
+                else if (menuChoice == 3) {
+                    accessCredentials();
+                    break;
+                }
+
+                // Allows user to exit the program.
+                else if (menuChoice == 4) {
+                    System.out.println("Goodbye.");
+                    exit = true;
+
+                } else System.out.println("You have entered an invalid input. Please try again.\n");
+            } catch (InputMismatchException e) {
+                System.out.println("You must enter a valid number. Please try again.\n");
+                scanner.next();
             }
-
-            // Allows user to exit the program.
-            else if (menuChoice == 4) {
-                System.out.println("Goodbye.");
-                exit = true;
-
-                // TODO: this error catching does nothing if you enter a string its still a input mismatch so fix.
-            } else System.out.println("You have entered an invalid input. Please try again.\n");
         }
     }
 }
