@@ -1,6 +1,9 @@
 import java.util.Random;
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import java.io.*;
+import java.nio.*;
+import java.nio.file.*;
 
 public class Main {
     static Scanner scanner = new Scanner(System.in);
@@ -18,7 +21,7 @@ public class Main {
                 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 '!', '#', '$', '%', '&', '(', ')', '*', '+'};
 
-        // Creating the randomly generated password.
+        // Creating the password by adding a random character one by one until it meets the specified length.
         String pwd = "";
         System.out.println("How many characters would you like your password to have?");
         try {
@@ -26,11 +29,13 @@ public class Main {
             for (int i = 0; i <= (num); i++) {
                 int randomNum = rand.nextInt(chars.length);
                 pwd = pwd.concat(String.valueOf(chars[randomNum])); }
+
+        // Error catching in case a non-integer was entered.
         } catch (InputMismatchException e) {
             System.out.println("You must enter a valid number. Please try again.");
             scanner.next();
-            generatePassword();
-        }
+            generatePassword(); }
+
         return pwd;
     }
 
@@ -39,8 +44,41 @@ public class Main {
      * @param the generated password, or default value.
      */
     static void storeCredentials(String password) {
-        // TODO: store credentials method
-        System.out.println(password + " was put through next method");
+
+        // Asking the user for their credentials.
+        while (true) {
+            System.out.println("What is the username you would like to store?");
+            String username = scanner.next();
+            String pwd;
+            if (password.equals("default")) {
+                System.out.println("What is the password you would like to store?");
+                pwd = scanner.next();
+            } else {
+                pwd = password;
+            }
+            System.out.println("What is the website these credentials are for?");
+            String website = scanner.next();
+            String credentials = "Username: " + username + " || Password: " + pwd + " || Website: " + website + "\n";
+
+            // Checking to see if the input is correct.
+            System.out.println("You have entered - " + credentials + "Is this correct? Please type 'yes' or 'no'.");
+            String answer = scanner.next();
+            String accepted = answer.toLowerCase();
+
+            // Storing the credentials if they're correct, or having the user re-enter them if they're not.
+            if (accepted.equals("yes")) {
+                File masterList = new File("masterList.txt");
+                try {
+                    Files.writeString(masterList.toPath(), credentials, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                    System.out.println("Your credentials have been stored.\n");
+                } catch (IOException ex) {
+                    System.out.println("There was an error processing your request.");
+                }
+                break;
+            } else if (!accepted.equals("yes") && !accepted.equals("no")) {
+                System.out.println("You have entered an invalid input. Please try again.\n");
+            }
+        }
     }
 
     /**
@@ -103,9 +141,7 @@ public class Main {
                 System.out.println("Goodbye.");
                 exit = true;
 
-                // TODO: if can't break out of program without running this once it's all said and done, fix.
-
-            // Error catching.
+                // TODO: this error catching does nothing if you enter a string its still a input mismatch so fix.
             } else System.out.println("You have entered an invalid input. Please try again.\n");
         }
     }
