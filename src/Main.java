@@ -90,8 +90,6 @@ public class Main {
      * Allows user to access their previously saved credentials.
      */
     static void accessCredentials() {
-        // TODO: access credentials method
-
         File masterList = new File("masterList.txt");
         Charset charset = StandardCharsets.UTF_8;
 
@@ -102,8 +100,10 @@ public class Main {
             while ((line = bufferedReader.readLine()) != null) {
                 System.out.println(line);
             }
+            main(null);
         } catch (IOException e) {
-            System.out.println("Error accessing file: " + e.getMessage());
+            System.out.println("(Error accessing file. Please make sure you have successfully stored your credentials and try again.)");
+            main(null);
         }
     }
 
